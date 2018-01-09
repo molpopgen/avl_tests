@@ -1,6 +1,8 @@
 #include "avl.h"
 #include <cstdlib>
 #include <tuple>
+#include <cstdio>
+#include <gsl/gsl_rng.h>
 
 using namespace std;
 
@@ -24,7 +26,7 @@ static void
 free_ttype(void *p)
 {
     ttype *p_ = (ttype *)p;
-    free(p_);
+    delete(p_);
 }
 
 int
@@ -35,15 +37,20 @@ main(int argc, char **argv)
     ttype *p;
     avl_node_t *node;
 
+    gsl_rng* r = gsl_rng_alloc(gsl_rng_mt19937);
+    gsl_rng_set(r, 42);
     for (i = 0; i < 10000000; ++i)
         {
-            p = (ttype *)malloc(sizeof(ttype));
-            get<0>(*p) = -1. * (double)i;
-            get<1>(*p) = i;
+            auto a = gsl_rng_uniform(r);
+            auto b = gsl_rng_uniform(r);
+            p = new ttype(make_tuple(a,b));
             avl_insert(tree, p);
         }
     for (node = tree->head; node; node = node->next)
         {
             p = (ttype *)node->item;
         }
+    printf("%d\n", avl_count(tree));
+    gsl_rng_free(r);
+    avl_free_tree(tree);
 }
